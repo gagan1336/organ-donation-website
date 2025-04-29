@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Organ Donation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvCgNFkSeeAgwGEIuZS4B964DTVNsPkPg",
+      authDomain: "organ-donation-efa38.firebaseapp.com",
+      projectId: "organ-donation-efa38",
+      storageBucket: "organ-donation-efa38.firebasestorage.app",
+      messagingSenderId: "590381753183",
+      appId: "1:590381753183:web:34aa16836c33edb2b58cea",
+      measurementId: "G-ZJTR7TT14X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    // Handle form submission
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('errorMessage');
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // Redirect to admin page on successful login
+        window.location.href = 'admin.html';
+      } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+      }
+    });
+
+    // Check if user is already logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = 'admin.html';
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-name">OrganDonation</h1>
+      <nav class="menu">
+        <a href="index.html" class="menu-link">Home</a>
+        <a href="donor.html" class="menu-link">Donor Register</a>
+        <a href="hospital.html" class="menu-link">Hospital Register</a>
+        <a href="view.html" class="menu-link">View Listings</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Login Form -->
+  <section class="form-section">
+    <div class="form-container">
+      <h2 class="form-title">Admin Login</h2>
+      <form id="loginForm" class="registration-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Login</button>
+        <a href="index.html" class="btn secondary-btn" style="margin-top: 10px; display: inline-block;">Back to Home</a>
+      </form>
+      <div id="errorMessage" class="error-message"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3 class="footer-logo">OrganDonate</h3>
+        <p class="footer-about">Saving lives, one organ at a time.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 OrganDonate. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html> 

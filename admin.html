@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Organ Donation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvCgNFkSeeAgwGEIuZS4B964DTVNsPkPg",
+      authDomain: "organ-donation-efa38.firebaseapp.com",
+      projectId: "organ-donation-efa38",
+      storageBucket: "organ-donation-efa38.firebasestorage.app",
+      messagingSenderId: "590381753183",
+      appId: "1:590381753183:web:34aa16836c33edb2b58cea",
+      measurementId: "G-ZJTR7TT14X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Check authentication state
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = 'login.html';
+      });
+    });
+
+    // Function to populate admin donors table
+    async function populateAdminDonorsTable() {
+      const adminDonorsTableBody = document.getElementById('adminDonorsTableBody');
+      adminDonorsTableBody.innerHTML = '';
+
+      try {
+        const donorsSnapshot = await getDocs(collection(db, 'donors'));
+        donorsSnapshot.forEach(doc => {
+          const donor = doc.data();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${donor.name}</td>
+            <td>${donor.email}</td>
+            <td>${donor.phone}</td>
+            <td>${donor.age}</td>
+            <td>${donor.bloodGroup}</td>
+            <td>${donor.organs.join(', ')}</td>
+            <td>
+              <button class="delete-btn" data-id="${doc.id}" data-type="donor">Delete</button>
+            </td>
+          `;
+          adminDonorsTableBody.appendChild(row);
+        });
+
+        // Add delete event listeners
+        document.querySelectorAll('.delete-btn[data-type="donor"]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (confirm('Are you sure you want to delete this donor?')) {
+              try {
+                await deleteDoc(doc(db, 'donors', id));
+                populateAdminDonorsTable();
+              } catch (error) {
+                console.error('Error deleting donor:', error);
+                alert('Error deleting donor. Please try again.');
+              }
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error fetching donors:', error);
+      }
+    }
+
+    // Function to populate admin hospitals table
+    async function populateAdminHospitalsTable() {
+      const adminHospitalsTableBody = document.getElementById('adminHospitalsTableBody');
+      adminHospitalsTableBody.innerHTML = '';
+
+      try {
+        const hospitalsSnapshot = await getDocs(collection(db, 'hospitals'));
+        hospitalsSnapshot.forEach(doc => {
+          const hospital = doc.data();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${hospital.hospitalName}</td>
+            <td>${hospital.email}</td>
+            <td>${hospital.phone}</td>
+            <td>${hospital.address}</td>
+            <td>${hospital.city}</td>
+            <td>${hospital.state}</td>
+            <td>
+              <button class="delete-btn" data-id="${doc.id}" data-type="hospital">Delete</button>
+            </td>
+          `;
+          adminHospitalsTableBody.appendChild(row);
+        });
+
+        // Add delete event listeners
+        document.querySelectorAll('.delete-btn[data-type="hospital"]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (confirm('Are you sure you want to delete this hospital?')) {
+              try {
+                await deleteDoc(doc(db, 'hospitals', id));
+                populateAdminHospitalsTable();
+              } catch (error) {
+                console.error('Error deleting hospital:', error);
+                alert('Error deleting hospital. Please try again.');
+              }
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error fetching hospitals:', error);
+      }
+    }
+
+    // Search functionality for admin donors
+    document.getElementById('adminDonorSearch').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#adminDonorsTableBody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+
+    // Search functionality for admin hospitals
+    document.getElementById('adminHospitalSearch').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#adminHospitalsTableBody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+
+    // Initial population of tables
+    populateAdminDonorsTable();
+    populateAdminHospitalsTable();
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-name">OrganDonate</h1>
+      <nav class="menu">
+        <a href="index.html" class="menu-link">Home</a>
+        <a href="donor.html" class="menu-link">Donor Register</a>
+        <a href="hospital.html" class="menu-link">Hospital Register</a>
+        <a href="view.html" class="menu-link">View Listings</a>
+        <button id="logoutBtn" class="menu-link btn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Admin Dashboard -->
+  <section class="admin-section">
+    <div class="admin-container">
+      <!-- Donors Management -->
+      <div class="table-section">
+        <h2 class="table-title">Manage Donors</h2>
+        <div class="search-box">
+          <input type="text" id="adminDonorSearch" placeholder="Search donors...">
+        </div>
+        <div class="table-responsive">
+          <table id="adminDonorsTable" class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Age</th>
+                <th>Blood Group</th>
+                <th>Organs</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminDonorsTableBody">
+              <!-- Donors data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Hospitals Management -->
+      <div class="table-section">
+        <h2 class="table-title">Manage Hospitals</h2>
+        <div class="search-box">
+          <input type="text" id="adminHospitalSearch" placeholder="Search hospitals...">
+        </div>
+        <div class="table-responsive">
+          <table id="adminHospitalsTable" class="data-table">
+            <thead>
+              <tr>
+                <th>Hospital Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminHospitalsTableBody">
+              <!-- Hospitals data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3 class="footer-logo">OrganDonate</h3>
+        <p class="footer-about">Saving lives, one organ at a time.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 OrganDonate. All rights reserved.</p>
+    </div>
+  </footer>
+  <a href="index.html" class="btn secondary-btn" style="margin-top: 20px; display: inline-block;">Back to Home</a>
+</body>
+</html> 

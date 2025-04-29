@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Dashboard - Organ Donation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvCgNFkSeeAgwGEIuZS4B964DTVNsPkPg",
+      authDomain: "organ-donation-efa38.firebaseapp.com",
+      projectId: "organ-donation-efa38",
+      storageBucket: "organ-donation-efa38.firebasestorage.app",
+      messagingSenderId: "590381753183",
+      appId: "1:590381753183:web:34aa16836c33edb2b58cea",
+      measurementId: "G-ZJTR7TT14X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Check authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'donor-login.html';
+        return;
+      }
+
+      // Get hospitals data
+      const hospitalsRef = collection(db, 'hospitals');
+      const querySnapshot = await getDocs(hospitalsRef);
+      const hospitalsTable = document.getElementById('hospitalsTable');
+      const hospitalsBody = document.getElementById('hospitalsBody');
+      
+      // Clear existing content
+      hospitalsBody.innerHTML = '';
+
+      if (querySnapshot.empty) {
+        hospitalsTable.style.display = 'none';
+        document.getElementById('noHospitals').style.display = 'block';
+      } else {
+        hospitalsTable.style.display = 'table';
+        document.getElementById('noHospitals').style.display = 'none';
+        
+        querySnapshot.forEach((doc) => {
+          const hospital = doc.data();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${hospital.hospitalName}</td>
+            <td>${hospital.phone}</td>
+            <td>${hospital.address}, ${hospital.city}, ${hospital.state}</td>
+            <td>${hospital.licenseNumber}</td>
+          `;
+          hospitalsBody.appendChild(row);
+        });
+      }
+    });
+
+    // Handle logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'donor-login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    });
+
+    // Handle search
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#hospitalsBody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-name">OrganDonate</h1>
+      <nav class="menu">
+        <a href="index.html" class="menu-link">Home</a>
+        <button id="logoutBtn" class="menu-link btn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <section class="dashboard-section">
+    <div class="dashboard-container">
+      <h2 class="dashboard-title">Available Hospitals</h2>
+      
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search hospitals...">
+      </div>
+
+      <div id="noHospitals" class="no-data-message" style="display: none;">
+        <p>No hospitals registered yet.</p>
+      </div>
+
+      <div class="table-responsive">
+        <table id="hospitalsTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Hospital Name</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>License Number</th>
+            </tr>
+          </thead>
+          <tbody id="hospitalsBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3 class="footer-logo">OrganDonate</h3>
+        <p class="footer-about">Saving lives, one organ at a time.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 OrganDonate. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html> 

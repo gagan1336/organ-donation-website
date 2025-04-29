@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Registration - Organ Donation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvCgNFkSeeAgwGEIuZS4B964DTVNsPkPg",
+      authDomain: "organ-donation-efa38.firebaseapp.com",
+      projectId: "organ-donation-efa38",
+      storageBucket: "organ-donation-efa38.firebasestorage.app",
+      messagingSenderId: "590381753183",
+      appId: "1:590381753183:web:34aa16836c33edb2b58cea",
+      measurementId: "G-ZJTR7TT14X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Handle form submission
+    document.getElementById('hospitalForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const hospitalName = document.getElementById('hospitalName').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const address = document.getElementById('address').value;
+      const city = document.getElementById('city').value;
+      const state = document.getElementById('state').value;
+      const licenseNumber = document.getElementById('licenseNumber').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Validate password
+      if (password !== confirmPassword) {
+        errorMessage.textContent = 'Passwords do not match';
+        errorMessage.style.display = 'block';
+        return;
+      }
+
+      try {
+        // Create authentication account
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Store hospital data in Firestore
+        await addDoc(collection(db, 'hospitals'), {
+          hospitalName,
+          email,
+          phone,
+          address,
+          city,
+          state,
+          licenseNumber,
+          uid: userCredential.user.uid // Store the auth UID
+        });
+
+        // Show success message
+        alert('Registration successful! You can now login.');
+        window.location.href = 'hospital-login.html';
+      } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-name">OrganDonate</h1>
+      <nav class="menu">
+        <a href="index.html" class="menu-link">Home</a>
+        <a href="donor.html" class="menu-link">Donor Register</a>
+        <a href="view.html" class="menu-link">View Hospitals</a>
+        <a href="login.html" class="menu-link btn" id="Login">Admin Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hospital Registration Form -->
+  <section class="form-section">
+    <div class="form-container">
+      <h2 class="form-title">Hospital Registration</h2>
+      <form id="hospitalForm" class="registration-form">
+        <div class="form-group">
+          <label for="hospitalName">Hospital Name</label>
+          <input type="text" id="hospitalName" name="hospitalName" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" name="city" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="state">State</label>
+          <input type="text" id="state" name="state" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="licenseNumber">License Number</label>
+          <input type="text" id="licenseNumber" name="licenseNumber" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Register Hospital</button>
+        <a href="index.html" class="btn secondary-btn" style="margin-top: 10px; display: inline-block;">Back to Home</a>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3 class="footer-logo">OrganDonate</h3>
+        <p class="footer-about">Saving lives, one organ at a time.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 OrganDonate. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html> 

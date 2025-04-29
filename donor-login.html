@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Login - Organ Donation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvCgNFkSeeAgwGEIuZS4B964DTVNsPkPg",
+      authDomain: "organ-donation-efa38.firebaseapp.com",
+      projectId: "organ-donation-efa38",
+      storageBucket: "organ-donation-efa38.firebasestorage.app",
+      messagingSenderId: "590381753183",
+      appId: "1:590381753183:web:34aa16836c33edb2b58cea",
+      measurementId: "G-ZJTR7TT14X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Handle form submission
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('errorMessage');
+
+      try {
+        // First check if this email exists in donors collection
+        const donorsRef = collection(db, 'donors');
+        const q = query(donorsRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error('This email is not registered as a donor.');
+        }
+
+        // If email exists in donors, try to sign in
+        await signInWithEmailAndPassword(auth, email, password);
+        // Redirect to donor dashboard
+        window.location.href = 'donor-dashboard.html';
+      } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+      }
+    });
+
+    // Check if user is already logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Check if user is a donor
+        const checkDonor = async () => {
+          const donorsRef = collection(db, 'donors');
+          const q = query(donorsRef, where('email', '==', user.email));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            window.location.href = 'donor-dashboard.html';
+          }
+        };
+        checkDonor();
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-name">OrganDonate</h1>
+      <nav class="menu">
+        <a href="index.html" class="menu-link">Home</a>
+        <a href="donor.html" class="menu-link">Donor Register</a>
+        <a href="hospital.html" class="menu-link">Hospital Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Login Form -->
+  <section class="form-section">
+    <div class="form-container">
+      <h2 class="form-title">Donor Login</h2>
+      <form id="loginForm" class="registration-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+      <div id="errorMessage" class="error-message"></div>
+      <p class="form-footer">Not registered? <a href="donor.html">Register as a donor</a></p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3 class="footer-logo">OrganDonate</h3>
+        <p class="footer-about">Saving lives, one organ at a time.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 OrganDonate. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html> 
