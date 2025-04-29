@@ -20,12 +20,7 @@ A web platform connecting organ donors with hospitals, facilitating the organ do
 ## Deployment
 
 This website is deployed using GitHub Pages. To deploy:
-
-1. Fork this repository
-2. Go to repository settings
-3. Navigate to Pages
-4. Select the main branch as source
-5. Your site will be available at `https://[your-username].github.io/organ-donation-website`
+Site will be available at `https://[your-username].github.io/organ-donation-website`
 
 ## Local Development
 
